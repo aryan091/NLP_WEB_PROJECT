@@ -20,12 +20,10 @@ idna==2.10
 itsdangerous==2.0.1
 Jinja2==3.0.1
 joblib==1.0.1
-Keras==2.4.3
 Markdown==3.3.4
 MarkupSafe==2.0.1
 murmurhash==1.0.5
 nltk==3.6.2
-numpy==1.19.5
 oauthlib==3.1.0
 opt-einsum==3.3.0
 packaging==20.9
