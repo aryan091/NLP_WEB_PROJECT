@@ -9,12 +9,28 @@ import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 
+# def text_process(mess):
+#     """
+#     Takes in a string of text, then performs the following:
+#     1. Remove all punctuation
+#     2. Remove all stopwords
+#     3. Returns a list of the cleaned text
+#     """
+#     # Check characters to see if they are in punctuation
+#     nopunc = [char for char in mess if char not in string.punctuation]
+#
+#     # Join the characters again to form the string.
+#     nopunc = ''.join(nopunc)
+#
+#     # Now just remove any stopwords
+#     return [word for word in nopunc.split() if word.lower() not in stopwords.words('english')]
+
 
 # model load spam classification
 spam_model = joblib.load('models/spammodeljune1.pkl')
 
 # news classifier
-n_clf = joblib.load('models/exactnewsclassifier.pkl')
+#n_clf = joblib.load('models/exactnewsclassifier.pkl')
 
 app = Flask(__name__)
 
@@ -151,19 +167,19 @@ def sum_route():
 
 
 # news classifier
-@app.route('/newsclf')
-def news_classifier():
-    return render_template('news.html')
-
-
-@app.route('/newsclassifier', methods=['POST', 'GET'])
-def news_clf():
-    if request.method == 'POST':
-        message = request.form['message']
-
-        pred = n_clf.predict([message])
-        print("pred--", pred)
-        return render_template('news.html', prediction=pred)
+# @app.route('/newsclf')
+# def news_classifier():
+#     return render_template('news.html')
+# 
+# 
+# @app.route('/newsclassifier', methods=['POST', 'GET'])
+# def news_clf():
+#     if request.method == 'POST':
+#         message = request.form['message']
+# 
+#         pred = n_clf.predict([message])
+#         print("pred--", pred)
+#         return render_template('news.html', prediction=pred)
 
 
 if __name__ == '__main__':
