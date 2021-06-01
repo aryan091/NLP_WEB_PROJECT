@@ -20,55 +20,7 @@ n_clf = joblib.load('models/newsjune1.pkl')
 app = Flask(__name__)
 
 
-def process(text):
-    global punctuation
-    stopwords = list(STOP_WORDS)
 
-    nlp = spacy.load('en_core_web_sm')
-
-    # if you get error on this line
-
-    # pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.0.0/en_core_web_sm-3.0.0.tar.gz
-
-    doc = nlp(text)
-    tokens = [token.text for token in doc]
-
-    punctuation = punctuation + '\n'
-
-    word_frequencies = {}
-    for word in doc:
-        if word.text.lower() not in stopwords:
-            if word.text.lower() not in punctuation:
-                if word.text not in word_frequencies.keys():
-                    word_frequencies[word.text] = 1
-                else:
-                    word_frequencies[word.text] += 1
-
-    max_frequency = max(word_frequencies.values())
-
-    for word in word_frequencies.keys():
-        word_frequencies[word] = word_frequencies[word] / max_frequency
-
-    sentence_tokens = [sent for sent in doc.sents]
-
-    sentence_scores = {}
-    for sent in sentence_tokens:
-        for word in sent:
-            if word.text.lower() in word_frequencies.keys():
-                if sent not in sentence_scores.keys():
-                    sentence_scores[sent] = word_frequencies[word.text.lower()]
-                else:
-                    sentence_scores[sent] += word_frequencies[word.text.lower()]
-
-    from heapq import nlargest
-
-    select_length = int(len(sentence_tokens) * 0.3)
-    summary = nlargest(select_length, sentence_scores, key=sentence_scores.get)
-
-    final_summary = [word.text for word in summary]
-    summary = ' '.join(final_summary)
-
-    return summary
 
 
 # home page
@@ -145,10 +97,55 @@ def summarize_nlp():
 @app.route('/summarize', methods=['POST', 'GET'])
 def sum_route():
     if request.method == 'POST':
-        message = request.form['message']
+        text = request.form['message']
+        global punctuation
+        stopwords = list(STOP_WORDS)
 
-        sum_message = process(message)
-        return render_template('summarize.html', prediction=sum_message)
+        nlp = spacy.load('en_core_web_sm')
+
+        # if you get error on this line
+
+        # pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.0.0/en_core_web_sm-3.0.0.tar.gz
+
+        doc = nlp(text)
+        tokens = [token.text for token in doc]
+
+        string.punctuation = string.punctuation + '\n'
+
+        word_frequencies = {}
+        for word in doc:
+            if word.text.lower() not in stopwords:
+                if word.text.lower() not in string.punctuation:
+                    if word.text not in word_frequencies.keys():
+                        word_frequencies[word.text] = 1
+                    else:
+                        word_frequencies[word.text] += 1
+
+        max_frequency = max(word_frequencies.values())
+
+        for word in word_frequencies.keys():
+            word_frequencies[word] = word_frequencies[word] / max_frequency
+
+        sentence_tokens = [sent for sent in doc.sents]
+
+        sentence_scores = {}
+        for sent in sentence_tokens:
+            for word in sent:
+                if word.text.lower() in word_frequencies.keys():
+                    if sent not in sentence_scores.keys():
+                        sentence_scores[sent] = word_frequencies[word.text.lower()]
+                    else:
+                        sentence_scores[sent] += word_frequencies[word.text.lower()]
+
+        from heapq import nlargest
+
+        select_length = int(len(sentence_tokens) * 0.3)
+        summary = nlargest(select_length, sentence_scores, key=sentence_scores.get)
+
+        final_summary = [word.text for word in summary]
+        summary = ' '.join(final_summary)
+
+        return render_template('summarize.html', prediction=summary)
 
 
 #news classifier
