@@ -5,7 +5,7 @@ import joblib
 import string
 from nltk.corpus import stopwords
 from textblob import TextBlob
-import keras
+
 
 
 def text_process(mess):
@@ -25,7 +25,7 @@ def text_process(mess):
     return [word for word in nopunc.split() if word.lower() not in stopwords.words('english')]
 
 
-sen_model = keras.models.load_model('models/best_model2.hdf5')
+
 
 # model load spam classification
 spam_model = joblib.load('models/mymodel2May.pkl')
