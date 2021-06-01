@@ -1,16 +1,11 @@
-import warnings
 from flask import Flask, render_template, request
 from spacy.lang.en.stop_words import STOP_WORDS
-
-warnings.filterwarnings('ignore')
-import keras
-import numpy as np
-from keras.preprocessing.text import Tokenizer
-from keras.preprocessing.sequence import pad_sequences
 import spacy
 import joblib
 import string
 from nltk.corpus import stopwords
+from textblob import TextBlob
+import keras
 
 
 def text_process(mess):
@@ -108,15 +103,23 @@ def sentiment_nlp():
 def sentiment():
     if request.method == 'POST':
         message = request.form['message']
-        max_words = 5000
-        max_len = 200
-        tokenizer = Tokenizer(num_words=max_words)
+        c_sentence = TextBlob(message).correct()
 
-        sentiments = ['Neutral', 'Negative', 'Positive']
-        sequence = tokenizer.texts_to_sequences([message])
-        test = pad_sequences(sequence, maxlen=max_len)
-        print("SENTIMENT IS :", sentiments[np.around(sen_model.predict(test), decimals=0).argmax(axis=1)[0]])
-        pred = sentiments[np.around(sen_model.predict(test), decimals=0).argmax(axis=1)[0]]
+        print(" Corrected sen : ", c_sentence)
+
+        analysisPol = TextBlob(message).polarity
+
+        print(" Analysis Pol : ", analysisPol)
+        pred = ""
+        if analysisPol < 0.0:
+            pred = 'Negative'
+        elif analysisPol > 0.0:
+            pred = 'Positive'
+        else:
+            pred = 'Neutral'
+
+        print("Prediction : ",pred)
+
         return render_template('sentiment.html', prediction=pred)
 
 
