@@ -8,8 +8,9 @@ from textblob import TextBlob
 import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
-
-
+from heapq import nlargest
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize, sent_tokenize
 
 # model load spam classification
 spam_model = joblib.load('models/spammodeljune1.pkl')
@@ -18,9 +19,6 @@ spam_model = joblib.load('models/spammodeljune1.pkl')
 n_clf = joblib.load('models/newsjune1.pkl')
 
 app = Flask(__name__)
-
-
-
 
 
 # home page
@@ -98,57 +96,54 @@ def summarize_nlp():
 def sum_route():
     if request.method == 'POST':
         text = request.form['message']
-        global punctuation
-        stopwords = list(STOP_WORDS)
+        stopWords = set(stopwords.words("english"))
+        words = word_tokenize(text)
 
-        nlp = spacy.load('en_core_web_sm')
+        # Creating a frequency table to keep the
+        # score of each word
 
-        # if you get error on this line
+        freqTable = dict()
+        for word in words:
+            word = word.lower()
+            if word in stopWords:
+                continue
+            if word in freqTable:
+                freqTable[word] += 1
+            else:
+                freqTable[word] = 1
 
-        # pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.0.0/en_core_web_sm-3.0.0.tar.gz
+        # Creating a dictionary to keep the score
+        # of each sentence
+        sentences = sent_tokenize(text)
+        sentenceValue = dict()
 
-        doc = nlp(text)
-        tokens = [token.text for token in doc]
-
-        string.punctuation = string.punctuation + '\n'
-
-        word_frequencies = {}
-        for word in doc:
-            if word.text.lower() not in stopwords:
-                if word.text.lower() not in string.punctuation:
-                    if word.text not in word_frequencies.keys():
-                        word_frequencies[word.text] = 1
+        for sentence in sentences:
+            for word, freq in freqTable.items():
+                if word in sentence.lower():
+                    if sentence in sentenceValue:
+                        sentenceValue[sentence] += freq
                     else:
-                        word_frequencies[word.text] += 1
+                        sentenceValue[sentence] = freq
 
-        max_frequency = max(word_frequencies.values())
+        sumValues = 0
+        for sentence in sentenceValue:
+            sumValues += sentenceValue[sentence]
 
-        for word in word_frequencies.keys():
-            word_frequencies[word] = word_frequencies[word] / max_frequency
+        # Average value of a sentence from the original text
 
-        sentence_tokens = [sent for sent in doc.sents]
+        average = int(sumValues / len(sentenceValue))
 
-        sentence_scores = {}
-        for sent in sentence_tokens:
-            for word in sent:
-                if word.text.lower() in word_frequencies.keys():
-                    if sent not in sentence_scores.keys():
-                        sentence_scores[sent] = word_frequencies[word.text.lower()]
-                    else:
-                        sentence_scores[sent] += word_frequencies[word.text.lower()]
+        # Storing sentences into our summary.
+        summary = ''
+        for sentence in sentences:
+            if (sentence in sentenceValue) and (sentenceValue[sentence] > (1.2 * average)):
+                summary += " " + sentence
 
-        from heapq import nlargest
-
-        select_length = int(len(sentence_tokens) * 0.3)
-        summary = nlargest(select_length, sentence_scores, key=sentence_scores.get)
-
-        final_summary = [word.text for word in summary]
-        summary = ' '.join(final_summary)
 
         return render_template('summarize.html', prediction=summary)
 
 
-#news classifier
+# news classifier
 @app.route('/newsclf')
 def news_classifier():
     return render_template('news.html')
