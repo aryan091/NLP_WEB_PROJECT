@@ -5,8 +5,9 @@ import joblib
 import string
 from nltk.corpus import stopwords
 from textblob import TextBlob
-
-
+import pandas as pd
+import numpy as np
+from sklearn.feature_extraction.text import CountVectorizer
 
 def text_process(mess):
     """
@@ -25,10 +26,8 @@ def text_process(mess):
     return [word for word in nopunc.split() if word.lower() not in stopwords.words('english')]
 
 
-
-
 # model load spam classification
-spam_model = joblib.load('models/mymodel2May.pkl')
+spam_model = joblib.load('models/spammodeljune1.pkl')
 
 # news classifier
 n_clf = joblib.load('models/exactnewsclassifier.pkl')
@@ -118,7 +117,7 @@ def sentiment():
         else:
             pred = 'Neutral'
 
-        print("Prediction : ",pred)
+        print("Prediction : ", pred)
 
         return render_template('sentiment.html', prediction=pred)
 
@@ -134,8 +133,22 @@ def spam_nlp():
 def spam():
     if request.method == 'POST':
         message = request.form['message']
-        pred = spam_model.predict([message])
-        return render_template('spam.html', prediction=pred)
+        data = pd.read_csv("spam.csv", encoding="latin-1")
+        data.drop(['Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4'], axis=1, inplace=True)
+        data['class'] = data['class'].map({'ham': 0, 'spam': 1})
+        X = data['message']
+        y = data['class']
+        cv = CountVectorizer()
+        X = cv.fit_transform(X)
+
+        data = [message]
+        vect = cv.transform(data).toarray()
+        pred = spam_model.predict(vect)
+        if pred == 0:
+            ans = "ham"
+        else:
+            ans = "spam"
+        return render_template('spam.html', prediction=ans)
 
 
 # summarize
@@ -148,6 +161,7 @@ def summarize_nlp():
 def sum_route():
     if request.method == 'POST':
         message = request.form['message']
+
         sum_message = process(message)
         return render_template('summarize.html', prediction=sum_message)
 
