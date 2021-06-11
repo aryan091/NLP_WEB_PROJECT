@@ -103,7 +103,7 @@ def readfilenews(file):
 
 
 def readfilesmt(file):
-    with open("uploads\\" + file, "r+") as script:
+    with open("uploads/" + file, "r+") as script:
         for line in script.readlines():
             c_sentence = TextBlob(line).correct()
 
