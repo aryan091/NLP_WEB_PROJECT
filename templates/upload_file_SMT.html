@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<head>
+<style>
+
+#buttonStyle{
+  padding: 10px;
+  color: white;
+  background-color: #009578;
+  border: 1px solid #009578;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#buttonStyle:hover {
+  background-color: #00b28f;
+  border: 1px solid #00b28f;
+}
+
+#errormsg {
+  margin-left: 10px;
+  font-family: sans-serif;
+  color: #aaa;
+}
+
+</style>
+</head>
+<body>
+<script>
+function FileUpload()
+{
+	document.getElementById('InputFile').click();
+}
+
+function selectFile()
+{
+	 if (document.getElementById('InputFile').value) {
+		 document.getElementById('errormsg').innerHTML = document.getElementById('InputFile').value.match(
+		      /[\/\\]([\w\d\s\.\-\(\)]+)$/
+		    )[1];
+		  } else {
+			  document.getElementById('errormsg').innerHTML = "No file chosen, yet.";
+		  }
+}
+</script>
+</body>
+<br>
+
+<form action="/upload_file_smtanal" method = "POST" enctype="multipart/form-data">
+  <input type="file" id="InputFile"  onchange="selectFile();" name = "file_name" hidden="hidden" />
+<button type="button" id="buttonStyle" onclick="FileUpload();">CHOOSE FILE HERE</button>
+<span id="errormsg">No file chosen, yet.</span><br><br>  <input type = "submit" value = "SUBMIT" style="background-color:blue;color:white;border:none;width:175px;height:40px;border-radius:5px;"/>
+
+
+    </p>
+    <div class="col-sm-6">
+			<div class="container">
+				<form method="POST" action="/upload_file_smtanal">
+				{% if prediction == True %}
+                    	<h2>Download</h2>
+    <p>
+		<a href="{{url_for('.download_file_p')}}" class="btn btn-warning my-2">Positive</a>
+		<a href="{{url_for('.download_file_n')}}" class="btn btn-warning my-2">Negative</a>
+		<a href="{{url_for('.download_file_net')}}" class="btn btn-warning my-2">Neutral</a>
+
+
+    </p>
+{% endif %}
+			</form>
+			<br>
+
+<!--			<div class="container">-->
+<!--				{% if prediction == 'b' %}-->
+<!--					<div class="container">-->
+<!--						<p class="alert alert-success"><b>Business News</b></p>-->
+<!--					</div>-->
+<!--				{% elif prediction == 't' %}-->
+<!--					<div class="container">-->
+<!--						<p class="alert alert-danger"><b>Science And Technology News</b></p>-->
+<!--					</div>-->
+<!--				{% elif prediction == 'e' %}-->
+<!--					<div class="container">-->
+<!--						<p class="alert alert-warning"><b>Entertainment News</b></p>-->
+<!--					</div>-->
+<!--				{% elif prediction == 'm' %}-->
+<!--				<div class="container">-->
+<!--					<p class="alert alert-primary"><b>Health News</b></p>-->
+<!--				</div>-->
+<!--				{% endif %}-->
+
+<!--			</div>-->
+
+			</div>
+		</div>
+
+
+
+</form>
+
+{% endblock %}
+
+
